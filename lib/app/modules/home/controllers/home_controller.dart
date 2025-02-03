@@ -1,32 +1,32 @@
+import 'package:data_blood/app/domain/entity/person.dart';
+import 'package:data_blood/app/domain/usecase/person_usecase.dart';
 import 'package:data_blood/app/utils/enums/filter_mode_enum.dart';
+import 'package:data_blood/app/utils/enums/blood_type_enum.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../../utils/enums/uf_enum.dart';
 
 class HomeController extends GetxController {
+  final PersonUseCase _personUseCase = Get.find<PersonUseCase>();
   int get totalItems => resultItens.length;
   int get filteredItemsCount => filteredItems.length;
   final RxList<Map<String, Object>> resultItens = <Map<String, Object>>[].obs;
   final filterMode = FilterMode.nenhum.obs;
-  final selectedBloodType = 'Todos'.obs;
+  final selectedBloodType = BloodType.todos.obs;
+  final selectedState = StateEnum.todos.obs;
   final minAge = 0.obs;
   final maxAge = 100.obs;
 
-  final bloodTypes = [
-    'Todos',
-    'A+',
-    'A-',
-    'B+',
-    'B-',
-    'AB+',
-    'AB-',
-    'O+',
-    'O-'
-  ];
+  List<String> get bloodTypeLabels =>
+      BloodType.values.map((e) => e.label).toList();
+
+  List<String> get stateLabels => StateEnum.values.map((e) => e.label).toList();
+
   @override
   void onInit() {
-    selectedBloodType.value = bloodTypes.first;
-
+    selectedBloodType.value = BloodType.todos;
+    selectedState.value = StateEnum.todos;
     super.onInit();
   }
 
@@ -36,21 +36,30 @@ class HomeController extends GetxController {
     return resultItens.where((p) {
       final age = _calculateAge(p['data_nasc'] as String);
       bool bloodMatch = true;
+      bool stateMatch = true;
 
       // Filtro por tipo sanguíneo (se não for 'Todos')
-      if (selectedBloodType.value != 'Todos') {
+      if (selectedBloodType.value != BloodType.todos) {
         if (filterMode.value == FilterMode.doador) {
           bloodMatch = _canDonate(
-              p['tipo_sanguineo'] as String, selectedBloodType.value);
+              p['tipo_sanguineo'] as String, selectedBloodType.value.label);
         } else if (filterMode.value == FilterMode.receptor) {
           bloodMatch = _canReceive(
-              p['tipo_sanguineo'] as String, selectedBloodType.value);
+              p['tipo_sanguineo'] as String, selectedBloodType.value.label);
         } else {
-          bloodMatch = p['tipo_sanguineo'] == selectedBloodType.value;
+          bloodMatch = p['tipo_sanguineo'] == selectedBloodType.value.label;
         }
       }
 
-      return bloodMatch && age >= minAge.value && age <= maxAge.value;
+      // Filtro por estado (se não for 'Todos')
+      if (selectedState.value != StateEnum.todos) {
+        stateMatch = p['estado'] == selectedState.value.label;
+      }
+
+      return bloodMatch &&
+          stateMatch &&
+          age >= minAge.value &&
+          age <= maxAge.value;
     }).toList();
   }
 
@@ -73,7 +82,8 @@ class HomeController extends GetxController {
 
   void resetFilters() {
     filterMode.value = FilterMode.nenhum;
-    selectedBloodType.value = 'Todos';
+    selectedBloodType.value = BloodType.todos;
+    selectedState.value = StateEnum.todos;
     minAge.value = 0;
     maxAge.value = 100;
     filterResults();
@@ -109,8 +119,14 @@ class HomeController extends GetxController {
     return compatibility[donorType]?.contains(receiverType) ?? false;
   }
 
-  void loadFromJson(List<Map<String, Object>> newData) {
+  void loadFromJson(List<Map<String, Object>> newData) async {
     resultItens.clear();
     resultItens.addAll(newData);
+    final toPerson = newData.map((e) => Pessoa.fromJson(e)).toList();
+    try {
+      _personUseCase.saveAllPersons(toPerson);
+    } catch (e) {
+      Get.snackbar('Erro', 'Falha ao salvar dados: ${e.toString()}');
+    }
   }
 }

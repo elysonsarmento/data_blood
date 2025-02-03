@@ -1,6 +1,8 @@
+import '../../../../utils/enums/blood_type_enum.dart';
 import '../../../../utils/enums/filter_mode_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../utils/enums/uf_enum.dart';
 import '../../controllers/home_controller.dart';
 
 class FilterDialog extends GetView<HomeController> {
@@ -23,6 +25,8 @@ class FilterDialog extends GetView<HomeController> {
           const SizedBox(height: 16),
           _buildBloodTypeFilter(),
           const SizedBox(height: 16),
+          _buildStateFilter(),
+          const SizedBox(height: 16),
           _buildAgeFilter(),
           const SizedBox(height: 24),
           _buildActionButtons(),
@@ -30,6 +34,29 @@ class FilterDialog extends GetView<HomeController> {
       ),
     );
   }
+
+  Widget _buildStateFilter() {
+  return Obx(() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text('Estado (UF):', style: TextStyle(fontSize: 16)),
+      DropdownButton<StateEnum>(
+        isExpanded: true,
+        value: controller.selectedState.value,
+        onChanged: (StateEnum? newValue) {
+          controller.selectedState.value = newValue!;
+          controller.filterResults();
+        },
+        items: StateEnum.values.map<DropdownMenuItem<StateEnum>>((StateEnum value) {
+          return DropdownMenuItem<StateEnum>(
+            value: value,
+            child: Text(value.label),
+          );
+        }).toList(),
+      ),
+    ],
+  ));
+}
 
   Widget _buildHeader() {
     return Row(
@@ -82,27 +109,27 @@ class FilterDialog extends GetView<HomeController> {
   }
 
   Widget _buildBloodTypeFilter() {
-    return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Tipo Sanguíneo:', style: TextStyle(fontSize: 16)),
-        DropdownButton<String>(
-          isExpanded: true,
-          value: controller.selectedBloodType.value,
-          onChanged: (String? newValue) {
-            controller.selectedBloodType.value = newValue!;
-            controller.filterResults();
-          },
-          items: controller.bloodTypes.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-        ),
-      ],
-    ));
-  }
+  return Obx(() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text('Tipo Sanguíneo:', style: TextStyle(fontSize: 16)),
+      DropdownButton<BloodType>(
+        isExpanded: true,
+        value: controller.selectedBloodType.value,
+        onChanged: (BloodType? newValue) {
+          controller.selectedBloodType.value = newValue!;
+          controller.filterResults();
+        },
+        items: BloodType.values.map<DropdownMenuItem<BloodType>>((BloodType value) {
+          return DropdownMenuItem<BloodType>(
+            value: value,
+            child: Text(value.label),
+          );
+        }).toList(),
+      ),
+    ],
+  ));
+}
 
   Widget _buildAgeFilter() {
     return Obx(() => Column(

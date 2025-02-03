@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:data_blood/app/utils/enums/blood_type_enum.dart';
+
 import '../../../../utils/enums/filter_mode_enum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -100,7 +102,7 @@ class FilterBar extends GetView<HomeController> {
                             Colors.blue),
                       if (controller.selectedBloodType.value != 'Todos')
                         _buildFilterChip(
-                            'Sangue: ${controller.selectedBloodType.value}',
+                            'Sangue: ${controller.selectedBloodType.value.label}',
                             Colors.red),
                       _buildFilterChip(
                           'Idade: ${controller.minAge}-${controller.maxAge} anos',
