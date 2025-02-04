@@ -123,10 +123,6 @@ class HomeController extends GetxController {
     resultItens.clear();
     resultItens.addAll(newData);
     final toPerson = newData.map((e) => Pessoa.fromJson(e)).toList();
-    try {
-      _personUseCase.saveAllPersons(toPerson);
-    } catch (e) {
-      Get.snackbar('Erro', 'Falha ao salvar dados: ${e.toString()}');
-    }
+    
   }
 }
